@@ -2,15 +2,11 @@ name: Export Marimo to HTML-WASM and Zip Artifact
 
 on:
   push:
-    branches:
-      - master
-      tags:
-       - '*'
-
-  workflow_dispatch:
+    tags:
+      - '*'
 
 jobs:
-  build-and-zip:
+  build-zip-and-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
