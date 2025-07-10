@@ -1,0 +1,43 @@
+name: Export Marimo to HTML-WASM and Zip Artifact
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Generate requirements.txt with pipreqs
+        uses: ryan-rozario/pipreqs-action@master
+        with:
+          PROJECT_PATH: .
+          REQUIREMENT_PATH: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Export notebook to HTML-WASM
+        run: |
+          marimo export html-wasm komplizierer.py -o komplizierer --mode run
+
+      - name: Zip exported folder
+        run: |
+          zip komplizierer.zip -r komplizierer/
+
+      - name: Upload zipped artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: komplizierer-export
+          path: komplizierer.zip
