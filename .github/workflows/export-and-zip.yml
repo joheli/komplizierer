@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - master
+      tags:
+       - '*'
+
   workflow_dispatch:
 
 jobs:
   build-and-zip:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -32,13 +37,15 @@ jobs:
         run: |
           marimo export html-wasm komplizierer.py -o komplizierer --mode run
 
-      - name: Zip the folder including the top-level directory
+      - name: Zip exported folder
         run: |
-          zip -r komplizierer-html-wasm-export.zip komplizierer
-
-      - name: Upload zipped artifact
-        uses: actions/upload-artifact@v4
+          zip -r komplizierer-html-wasm.zip komplizierer
+      
+      - name: Create GitHub Release and upload artifact
+        uses: ncipollo/release-action@v1
         with:
-          name: komplizierer-html-wasm-export
-          path: komplizierer-html-wasm-export.zip
+          artifacts: "komplizierer-html-wasm.zip"
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: "Komplizierer HTML-WASM Export."
 
