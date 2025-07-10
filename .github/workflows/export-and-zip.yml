@@ -32,12 +32,8 @@ jobs:
         run: |
           marimo export html-wasm komplizierer.py -o komplizierer --mode run
 
-      - name: Zip exported folder
-        run: |
-          zip komplizierer.zip -r komplizierer/
-
       - name: Upload zipped artifact
         uses: actions/upload-artifact@v4
         with:
-          name: komplizierer-export
-          path: komplizierer.zip
+          name: komplizierer-html-wasm-export
+          path: komplizierer/
