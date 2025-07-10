@@ -84,7 +84,7 @@ def _():
 @app.cell
 def _(StringIO, pd, response):
     dfs2 = pd.read_html(StringIO(response.text), header=0, flavor="html5lib")
-    code_data_frame = dfs2[1][['Display', 'Code']]
+    code_data_frame = dfs2[2][['Display', 'Code']]
     #code_data_frame
     return (code_data_frame,)
 
@@ -176,7 +176,7 @@ def _(meldecode, mo, pd, sets):
 
 @app.cell
 def _(labor_df):
-    labor_df
+    labor_df[['display', 'code']]
     return
 
 
