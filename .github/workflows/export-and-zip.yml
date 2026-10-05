@@ -38,10 +38,10 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: requirements-export.txt
+          cache-dependency-path: requirements.txt
 
       - name: Install export tooling
-        run: python -m pip install -r requirements-export.txt
+        run: python -m pip install -r requirements.txt
 
       - name: Show export tooling version
         run: marimo --version
