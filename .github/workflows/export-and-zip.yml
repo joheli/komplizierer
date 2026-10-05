@@ -1,11 +1,10 @@
 name: Export Marimo to HTML-WASM
 
 on:
+  # Only triggered when a tag is pushed, not by ordinary branch pushes.
   push:
-    # Only triggered when a tag is pushed - not by ordinary branch pushes!
     tags:
       - '*'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    # Needed by the release step. Branch/manual runs remain read-only.
     permissions:
-      contents: ${{ github.ref_type == 'tag' && 'write' || 'read' }}
+      # Required to create the GitHub release and upload its assets.
+      contents: write
 
     env:
       EXPORT_DIR: dist/komplizierer
