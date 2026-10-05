@@ -1,47 +1,86 @@
-name: Export Marimo to HTML-WASM and Zip Artifact
+name: Export Marimo to HTML-WASM
 
 on:
   push:
+    # Only triggered when a tag is pushed - not by ordinary branch pushes!
     tags:
       - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-zip-and-release:
+  build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Needed by the release step. Branch/manual runs remain read-only.
     permissions:
-      contents: write
+      contents: ${{ github.ref_type == 'tag' && 'write' || 'read' }}
+
+    env:
+      EXPORT_DIR: dist/komplizierer
+      ARCHIVE_PATH: dist/komplizierer-html-wasm.zip
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-export.txt
 
-      - name: Generate requirements.txt with pipreqs
-        uses: ryan-rozario/pipreqs-action@master
-        with:
-          PROJECT_PATH: .
-          REQUIREMENT_PATH: requirements.txt
+      - name: Install export tooling
+        run: python -m pip install -r requirements-export.txt
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Show export tooling version
+        run: marimo --version
 
       - name: Export notebook to HTML-WASM
         run: |
-          marimo export html-wasm komplizierer.py -o komplizierer --mode run
+          mkdir -p dist
+          marimo export html-wasm komplizierer.py \
+            --output "$EXPORT_DIR" \
+            --mode run \
+            --no-execute
 
-      - name: Zip exported folder
+      - name: Validate and zip export
         run: |
-          zip -r komplizierer-html-wasm.zip komplizierer
-      
-      - name: Create GitHub Release and upload artifact
+          test -s "$EXPORT_DIR/index.html"
+          (
+            cd dist
+            zip -q -r komplizierer-html-wasm.zip komplizierer
+          )
+          unzip -t "$ARCHIVE_PATH"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ env.ARCHIVE_PATH }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref_type == 'tag'
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "komplizierer-html-wasm.zip"
+          artifacts: ${{ env.ARCHIVE_PATH }}
+          artifactContentType: application/zip
+          artifactErrorsFailBuild: true
+          immutableCreate: true
           tag: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body: "Komplizierer HTML-WASM Export."
-
+          body: "Komplizierer HTML-WASM export."
+          generateReleaseNotes: true
