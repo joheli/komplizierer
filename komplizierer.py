@@ -59,6 +59,7 @@ def _(mo):
 
     Bitte wählen Sie die Zeile mit dem passenden Meldecode ("Code") in der [nachfolgenden Tabelle](#meldecodes). Nach Auswahl einer Zeile werden darunter die entsprechenden
 
+    -  [Meldekennungen (Codes)](#meldecodes)
     -  [Labor-LOINCs](#labor)
     -  [SNOMED Materialcodes](#material)
     -  [SNOMED Answercodes](#answer)
@@ -68,13 +69,24 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Quellcode
+
+    Der Quellcode für diese Anwendung ist unter https://github.com/joheli/komplizierer einsehbar.
+    """)
+    return
+
+
 @app.cell
 def _(mo):
     mo.md(r"""
-    /// details | Tipps
+    /// details | Tipps zur Arbeit mit den angezeigten Tabellen
 
-      * Durch Anklicken auf die Spaltenüberschrift rechts können Einträge gefiltert werden!
-      * Links unten gibt es auch ein Suchfeld (Lupe)!
+    -  Durch Anklicken auf die Spaltenüberschrift rechts können Einträge **sortiert** oder **gefiltert** werden!
+    -  Es gibt auch ein **Suchfeld** über den Tabellen!
+    -  Die Tabellen können in csv und andere Formate **exportiert** werden (siehe Icon `Export` rechts)!
 
     ///
     """)
@@ -105,7 +117,7 @@ def _(StringIO, pd, response):
 @app.cell
 def _(code_url, jetzt, mo):
     mo.md(f"""
-    ## <a name="meldecodes"></a>Meldecodes (Code)
+    ## <a id="meldecodes"></a>Meldecodes (Code)
 
     Abfragezeitpunkt: {jetzt}, Quelle: <a href="{code_url}" target="_blank">html</a>
     """)
@@ -162,7 +174,7 @@ def _(ZoneInfo, datetime, query_url):
         url_stamm = {"labor": "https://fhir.simplifier.net/rki.demis.laboratory/ValueSet/laboratoryTest", 
                      "material": "https://fhir.simplifier.net/rki.demis.laboratory/ValueSet/material", 
                      "answer": "https://fhir.simplifier.net/rki.demis.laboratory/ValueSet/answerSet"}
-    
+
         # ergänze die URL durch den Meldecode (in Großbuchstaben)
         url_final = url_stamm[art] + meldecode.upper()
 
@@ -213,7 +225,7 @@ def _(meldecode, mo, pd, sets):
 
     # Markdown für 
     mo.md(f"""
-    ## <a name="labor"></a>LOINC Optionen für Meldecode {meldecode.upper()}
+    ## <a id="labor"></a>LOINC Optionen für Meldecode {meldecode.upper()}
 
     Abfragezeitpunkt: {labor_zeitpunkt}
 
@@ -245,6 +257,14 @@ def _(labor_df):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    [nach oben](#anleitung)
+    """)
+    return
+
+
 @app.cell
 def _(meldecode, mo, pd, sets):
     # Answer Sets (SNOMED Optionen): erstelle Abfrage
@@ -266,7 +286,7 @@ def _(meldecode, mo, pd, sets):
 
     # Generiere Markdown zur Darstellung
     mo.md(f"""
-    ## <a name="answer"></a>SNOMED Answerset für Meldecode {meldecode.upper()}
+    ## <a id="answer"></a>SNOMED Answerset für Meldecode {meldecode.upper()}
 
     Abfragezeitpunkt: {answer_zeitpunkt}
 
@@ -298,6 +318,14 @@ def _(answer_df):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    [nach oben](#anleitung)
+    """)
+    return
+
+
 @app.cell
 def _(meldecode, mo, pd, sets):
     # Frage Material Optionen ab
@@ -320,7 +348,7 @@ def _(meldecode, mo, pd, sets):
 
     # Generiere Markdown zur Darstellung
     mo.md(f"""
-    ## <a name="material"></a>SNOMED Materialien für Meldecode {meldecode.upper()}
+    ## <a id="material"></a>SNOMED Materialien für Meldecode {meldecode.upper()}
 
     Abfragezeitpunkt: {material_zeitpunkt}
 
@@ -349,6 +377,14 @@ def _(mo):
 def _(material_df):
     # Stelle Material Optionen als Tabelle dar
     material_df.sort_values(by = ["display"], ignore_index=True)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    [nach oben](#anleitung)
+    """)
     return
 
 
